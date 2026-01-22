@@ -1,0 +1,9 @@
+{
+  "name": "uispin-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^0.14.0",
+    "@netlify/functions": "^2.4.0"
+  }
+}
