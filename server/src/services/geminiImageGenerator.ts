@@ -47,7 +47,7 @@ export async function generateUIImagesWithGemini(
     const enhancedPrompt = enhancePrompt(prompt, guidelines, variation);
 
     const response = await client.models.generateContent({
-      model: "gemini-3-pro-image-preview",
+      model: "gemini-2.0-flash-preview-image-generation",
       contents: enhancedPrompt,
       config: {
         responseModalities: ["image", "text"],
