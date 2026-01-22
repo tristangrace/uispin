@@ -114,9 +114,11 @@ export const handler: Handler = async (event) => {
     };
   } catch (error) {
     console.error("Error generating images:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to generate images" }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: `Failed to generate images: ${errorMessage}` }),
     };
   }
 };
