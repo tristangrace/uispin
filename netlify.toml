@@ -1,6 +1,6 @@
 [build]
   publish = "client/dist"
-  command = "cd client && npm install && npm run build"
+  command = "cd netlify/functions && npm install && cd ../../client && npm install && npm run build"
 
 [functions]
   directory = "netlify/functions"
