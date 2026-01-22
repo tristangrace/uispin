@@ -1,14 +1,12 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
-let openai: OpenAI | null = null;
+let genai: GoogleGenAI | null = null;
 
-function getClient(): OpenAI {
-  if (!openai) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+function getClient(): GoogleGenAI {
+  if (!genai) {
+    genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
-  return openai;
+  return genai;
 }
 
 function enhancePrompt(
@@ -33,24 +31,40 @@ This should look like a professional UI/UX design mockup, with realistic interfa
 Show it as a complete screen design.`;
 }
 
-export async function generateUIImages(
+export interface GeminiImageResult {
+  base64: string;
+  mimeType: string;
+}
+
+export async function generateUIImagesWithGemini(
   prompt: string,
   guidelines: string = ""
-): Promise<string[]> {
+): Promise<GeminiImageResult[]> {
+  const client = getClient();
   const variations = [0, 1, 2, 3];
 
   const imagePromises = variations.map(async (variation) => {
     const enhancedPrompt = enhancePrompt(prompt, guidelines, variation);
 
-    const response = await getClient().images.generate({
-      model: "dall-e-3",
-      prompt: enhancedPrompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard",
+    const response = await client.models.generateContent({
+      model: "gemini-3-pro-image-preview",
+      contents: enhancedPrompt,
+      config: {
+        responseModalities: ["image", "text"],
+      },
     });
 
-    return response.data[0].url!;
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.inlineData) {
+        return {
+          base64: part.inlineData.data!,
+          mimeType: part.inlineData.mimeType || "image/png",
+        };
+      }
+    }
+
+    throw new Error("No image generated");
   });
 
   const images = await Promise.all(imagePromises);

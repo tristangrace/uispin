@@ -1,26 +1,32 @@
 import { useState } from "react";
 
+export type Provider = "openai" | "gemini";
+
 interface GenerateState {
   images: string[];
   loading: boolean;
   error: string | null;
 }
 
-export function useGenerateUI() {
+export function useGenerateUI(onSuccess?: () => void) {
   const [state, setState] = useState<GenerateState>({
     images: [],
     loading: false,
     error: null,
   });
 
-  const generate = async (prompt: string) => {
+  const generate = async (
+    prompt: string,
+    guidelines: string,
+    provider: Provider = "gemini"
+  ) => {
     setState({ images: [], loading: true, error: null });
 
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, guidelines, provider }),
       });
 
       if (!response.ok) {
@@ -30,6 +36,7 @@ export function useGenerateUI() {
 
       const data = await response.json();
       setState({ images: data.images, loading: false, error: null });
+      onSuccess?.();
     } catch (err) {
       setState({
         images: [],
